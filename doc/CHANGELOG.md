@@ -4,9 +4,34 @@ All notable changes to this project are documented in this file.
 
 ---
 
-## [YYYY-MM-DD] - Project Initialized
+## [2025-12-26] - Manuscript Variants and Provenance
 
-- Created project structure from research template
+- Added variant snapshots with provenance manifests and comparison reports
+- Updated Quarto rendering to respect profile output directories
+- Added tests and documentation for variant workflows
+
+### Files Modified
+- manuscript_quarto/variant_tools.py
+- manuscript_quarto/variant_new.sh
+- manuscript_quarto/render_all.sh
+- manuscript_quarto/index.qmd
+- manuscript_quarto/appendix-*.qmd
+- manuscript_quarto/variants/README.md
+- manuscript_quarto/variants/INDEX.md
+- manuscript_quarto/variants/index.json
+- doc/MANUSCRIPT_VARIANTS.md
+- doc/skills.md
+- doc/PIPELINE.md
+- doc/ARCHITECTURE.md
+- doc/CUSTOMIZATION.md
+- README.md
+- tests/test_utils/test_variant_tools.py
+
+---
+
+## [2025-12-25] - Platform Initialized
+
+- Created project structure from platform scaffold
 - Set up pipeline stages (s00-s06)
 - Configured Quarto manuscript with journal profiles
 - Added documentation framework

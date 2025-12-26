@@ -1,4 +1,4 @@
-# Research Project Management Software - Claude Code Instructions
+# Research Project Management Platform - Claude Code Instructions
 
 ## Quick Start
 
@@ -35,14 +35,14 @@ python src/pipeline.py migrate_project --path /source --target /target --dry-run
 
 ### AI-Powered Project Migration
 
-This software provides tools for analyzing and migrating existing research projects to a standardized template format.
+This software provides tools for analyzing and migrating existing research projects to the standardized platform structure.
 
 1. **Project Analyzer** - Scans project directories, extracts Python module metadata (imports, functions, classes, docstrings)
-2. **Structure Mapper** - Maps source modules to template stages (s00-s07) based on content keywords
+2. **Structure Mapper** - Maps source modules to platform stages (s00-s07) based on content keywords
 3. **Migration Planner** - Generates actionable migration plans with setup, copy, transform, generate, and verify steps
 4. **Migration Executor** - Executes plans with dry-run support, creates scaffold files for manual code merge
 
-### Template Stage Pattern
+### Platform Stage Pattern
 
 | Stage | Purpose | Keywords |
 |-------|---------|----------|
@@ -89,7 +89,7 @@ This software provides tools for analyzing and migrating existing research proje
 | Module | Purpose |
 |--------|---------|
 | `src/agents/project_analyzer.py` | Scan and analyze project structures |
-| `src/agents/structure_mapper.py` | Map modules to template stages |
+| `src/agents/structure_mapper.py` | Map modules to platform stages |
 | `src/agents/migration_planner.py` | Generate migration plans |
 | `src/agents/migration_executor.py` | Execute migrations |
 
@@ -168,7 +168,7 @@ AI-powered tools for analyzing and migrating external research projects.
 # 1. Analyze project structure
 python src/pipeline.py analyze_project --path /path/to/project
 
-# 2. See how it maps to template
+# 2. See how it maps to the platform structure
 python src/pipeline.py map_project --path /path/to/project
 
 # 3. Generate migration plan

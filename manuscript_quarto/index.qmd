@@ -38,11 +38,18 @@ import sys
 from pathlib import Path
 from IPython.display import Markdown, display
 
-sys.path.insert(0, 'code')
+def find_manuscript_root(start: Path) -> Path:
+    for parent in [start] + list(start.parents):
+        if (parent / "_quarto.yml").exists() and (parent / "code" / "_common.py").exists():
+            return parent
+    raise FileNotFoundError("Could not locate manuscript root from current working directory.")
+
+MANUSCRIPT_ROOT = find_manuscript_root(Path.cwd())
+sys.path.insert(0, str(MANUSCRIPT_ROOT / "code"))
 from _common import load_diagnostic, show_table, format_pvalue, format_ci, add_significance_stars
 
-DATA_DIR = Path("data")
-FIG_DIR = Path("figures")
+DATA_DIR = MANUSCRIPT_ROOT / "data"
+FIG_DIR = MANUSCRIPT_ROOT / "figures"
 ```
 
 # Introduction {#sec-introduction}

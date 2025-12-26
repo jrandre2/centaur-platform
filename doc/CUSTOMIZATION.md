@@ -1,10 +1,10 @@
 # Customization Guide
 
-This guide explains how to adapt the Research Project Management template to your specific research project.
+This guide explains how to adapt the Research Project Management Platform to your specific research project.
 
 ## Overview
 
-The template is designed with clear extension points. Most customizations involve:
+The platform scaffold is designed with clear extension points. Most customizations involve:
 
 1. Modifying configuration values
 2. Adding project-specific variables
@@ -312,7 +312,7 @@ for ax, label in zip(axes.flat, ['A', 'B', 'C', 'D']):
     annotate_panel(ax, label)
 
 # Save with multiple formats
-save_figure(fig, 'figures/main_results', formats=['png', 'pdf', 'eps'])
+save_figure(fig, 'manuscript_quarto/figures/main_results', formats=['png', 'pdf', 'eps'])
 ```
 
 ### Journal-Specific Formatting
@@ -575,6 +575,8 @@ Use with:
 quarto render --profile yourjournal
 ```
 
+For divergent drafts, use `manuscript_quarto/variant_new.sh` and see `doc/MANUSCRIPT_VARIANTS.md`.
+
 ## Modifying Synthetic Data
 
 Edit `src/utils/synthetic_data.py`:
@@ -776,17 +778,17 @@ Update relevant documentation:
 - `doc/METHODOLOGY.md` - Statistical methods
 - `CLAUDE.md` - AI assistant instructions
 
-### 3. Keep Template Updates Separate
+### 3. Keep Platform Updates Separate
 
 ```bash
-# Add template as remote
-git remote add template https://github.com/template-repo.git
+# Add platform as remote
+git remote add platform https://github.com/platform-repo.git
 
 # Fetch updates
-git fetch template
+git fetch platform
 
-# Merge template updates (careful with conflicts)
-git merge template/main --allow-unrelated-histories
+# Merge platform updates (careful with conflicts)
+git merge platform/main --allow-unrelated-histories
 ```
 
 ### 4. Use Configuration Files

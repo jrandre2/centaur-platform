@@ -14,7 +14,7 @@ This document provides methodological guidance for common causal inference desig
 
 ### Common Design Patterns
 
-This template supports several common research designs:
+This platform scaffold supports several common research designs:
 
 | Design | Use Case | Key Requirement |
 |--------|----------|-----------------|

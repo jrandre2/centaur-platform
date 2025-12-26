@@ -1,6 +1,6 @@
 # System Architecture
 
-This document describes the architecture of the Research Project Management Software template, including data flow, component relationships, and extension points.
+This document describes the architecture of the Research Project Management Platform, including data flow, component relationships, and extension points.
 
 ## Overview
 
@@ -10,6 +10,7 @@ The system is designed as a modular research pipeline with clear separation betw
 2. **Analysis** - Estimation, robustness checks
 3. **Output Generation** - Figures, manuscript validation
 4. **Infrastructure** - Utilities, validation, configuration
+5. **Workflow Tools** - Review management, journal configuration, migration tools
 
 ```
 ┌─────────────────────────────────────────────────────────────────────┐
@@ -41,12 +42,14 @@ The system is designed as a modular research pipeline with clear separation betw
                                   │
 ┌─────────────────────────────────▼────────────────────────────────────┐
 │                         DATA LAYER                                    │
-│  ┌─────────────┐  ┌─────────────┐  ┌─────────────┐                  │
-│  │  data_raw/  │  │ data_work/  │  │  figures/   │                  │
-│  │  (input)    │  │ (processed) │  │  (output)   │                  │
-│  └─────────────┘  └─────────────┘  └─────────────┘                  │
+│  ┌─────────────┐  ┌─────────────┐  ┌──────────────────────────────┐ │
+│  │  data_raw/  │  │ data_work/  │  │ manuscript_quarto/figures/   │ │
+│  │  (input)    │  │ (processed) │  │ (primary figure outputs)     │ │
+│  └─────────────┘  └─────────────┘  └──────────────────────────────┘ │
 └──────────────────────────────────────────────────────────────────────┘
 ```
+
+Workflow tools (review management, journal configuration, and migration) sit alongside the core pipeline and operate on `doc/`, `manuscript_quarto/`, and external project directories.
 
 ## Directory Structure
 
@@ -71,11 +74,16 @@ project/
 │   ├── PIPELINE.md             # Pipeline stages
 │   ├── METHODOLOGY.md          # Statistical methods
 │   ├── DATA_DICTIONARY.md      # Variable definitions
-│   ├── TUTORIAL.md             # Getting started guide
-│   ├── CUSTOMIZATION.md        # Adaptation guide
+│   ├── SYNTHETIC_REVIEW_PROCESS.md
+│   ├── MANUSCRIPT_REVISION_CHECKLIST.md
+│   ├── reviews/                # Review cycle archive
 │   └── CHANGELOG.md            # Version history
 │
-├── figures/                     # Generated figures
+├── demo/                        # Minimal end-to-end demo
+│   ├── README.md               # Demo steps and expected outputs
+│   └── sample_data.csv         # Small sample dataset
+│
+├── figures/                     # Optional export figures
 │   └── *.png, *.pdf            # Publication figures
 │
 ├── manuscript_quarto/           # Quarto manuscript
@@ -83,15 +91,17 @@ project/
 │   ├── _quarto-<journal>.yml   # Journal profiles
 │   ├── index.qmd               # Main manuscript
 │   ├── appendix-*.qmd          # Appendices
+│   ├── REVISION_TRACKER.md     # Active review tracker
 │   ├── code/                   # Quarto code chunks
 │   ├── data/                   # Manuscript data
 │   ├── figures/                # Manuscript figures
+│   ├── variants/               # Divergent manuscript drafts
 │   └── journal_configs/        # Journal requirements
 │
 ├── src/                         # Source code
 │   ├── pipeline.py             # Main CLI entry point
 │   ├── data_audit.py           # Data auditing
-│   ├── stages/                 # Pipeline stages
+│   ├── stages/                 # Pipeline and workflow stages
 │   │   ├── s00_ingest.py      # Data ingestion
 │   │   ├── s01_link.py        # Record linkage
 │   │   ├── s02_panel.py       # Panel construction
@@ -99,7 +109,13 @@ project/
 │   │   ├── s04_robustness.py  # Robustness checks
 │   │   ├── s05_figures.py     # Figure generation
 │   │   ├── s06_manuscript.py  # Manuscript validation
-│   │   └── s07_reviews.py     # Review management
+│   │   ├── s07_reviews.py     # Review management
+│   │   └── s08_journal_parser.py # Journal configuration tools
+│   ├── agents/                 # Project migration tools
+│   │   ├── project_analyzer.py
+│   │   ├── structure_mapper.py
+│   │   ├── migration_planner.py
+│   │   └── migration_executor.py
 │   └── utils/                  # Shared utilities
 │       ├── helpers.py         # Common functions
 │       ├── validation.py      # Data validation
@@ -118,6 +134,7 @@ project/
         └── quarto              # Quarto wrapper
 ```
 
+
 ## Data Flow
 
 ### Stage Dependencies
@@ -134,47 +151,55 @@ data_raw/input.csv
           ▼
 ┌───────────────────┐
 │  s01_link.py      │  Match records across sources
-│  → data_linked.parquet
+│  → data_linked.parquet + diagnostics/linkage_summary.csv
 └─────────┬─────────┘
           │
           ▼
 ┌───────────────────┐
 │  s02_panel.py     │  Construct analysis panel
-│  → panel.parquet
+│  → panel.parquet + diagnostics/panel_summary.csv
 └─────────┬─────────┘
           │
           ├────────────────────────────┐
           ▼                            ▼
 ┌───────────────────┐        ┌───────────────────┐
 │  s03_estimation   │        │  s04_robustness   │
-│  → estimation_    │        │  → robustness_    │
+│  → diagnostics/   │        │  → diagnostics/   │
+│     estimation_   │        │     robustness_   │
 │     results.csv   │        │     results.csv   │
+│  → diagnostics/   │        │  → diagnostics/   │
+│     coefficients  │        │     placebo_      │
+│     .csv          │        │     results.csv   │
 └─────────┬─────────┘        └─────────┬─────────┘
           │                            │
           └──────────┬─────────────────┘
                      ▼
           ┌───────────────────┐
           │  s05_figures.py   │  Generate plots
-          │  → figures/*.png  │
+          │  → manuscript_quarto/figures/*.png  │
           └─────────┬─────────┘
                     │
                     ▼
           ┌───────────────────┐
           │  s06_manuscript   │  Validate submission
-          │  → validation.md  │
+          │  → diagnostics/   │
+          │     submission_   │
+          │     validation.md │
           └───────────────────┘
 ```
+
+Review management and journal configuration are workflow tools that do not depend on data flow outputs, but they do read from and write to `manuscript_quarto/` and `doc/`.
 
 ### File Naming Conventions
 
 | Stage | Input | Output |
 |-------|-------|--------|
 | s00 | `data_raw/*.csv` | `data_work/data_raw.parquet` |
-| s01 | `data_work/data_raw.parquet` | `data_work/data_linked.parquet` |
-| s02 | `data_work/data_linked.parquet` | `data_work/panel.parquet` |
-| s03 | `data_work/panel.parquet` | `data_work/diagnostics/estimation_results.csv` |
-| s04 | `data_work/panel.parquet` | `data_work/diagnostics/robustness_results.csv` |
-| s05 | `data_work/panel.parquet` | `figures/*.png` |
+| s01 | `data_work/data_raw.parquet` | `data_work/data_linked.parquet`<br>`data_work/diagnostics/linkage_summary.csv` |
+| s02 | `data_work/data_linked.parquet` | `data_work/panel.parquet`<br>`data_work/diagnostics/panel_summary.csv` |
+| s03 | `data_work/panel.parquet` | `data_work/diagnostics/estimation_results.csv`<br>`data_work/diagnostics/coefficients.csv` |
+| s04 | `data_work/panel.parquet` | `data_work/diagnostics/robustness_results.csv`<br>`data_work/diagnostics/placebo_results.csv` |
+| s05 | `data_work/panel.parquet` | `manuscript_quarto/figures/*.png` |
 | s06 | `manuscript_quarto/*.qmd` | `data_work/diagnostics/submission_validation.md` |
 
 ## Component Relationships
@@ -184,16 +209,26 @@ data_raw/input.csv
 ```python
 # src/pipeline.py command routing
 COMMANDS = {
-    'ingest_data':       's00_ingest.main()',
-    'link_records':      's01_link.main()',
-    'build_panel':       's02_panel.main()',
-    'run_estimation':    's03_estimation.main()',
+    'ingest_data': 's00_ingest.main()',
+    'link_records': 's01_link.main()',
+    'build_panel': 's02_panel.main()',
+    'run_estimation': 's03_estimation.main()',
     'estimate_robustness': 's04_robustness.main()',
-    'make_figures':      's05_figures.main()',
+    'make_figures': 's05_figures.main()',
     'validate_submission': 's06_manuscript.validate()',
-    'audit_data':        'data_audit.main()',
+    'review_new': 's07_reviews.new_cycle()',
+    'review_status': 's07_reviews.status()',
+    'review_verify': 's07_reviews.verify()',
+    'review_archive': 's07_reviews.archive()',
+    'review_report': 's07_reviews.report()',
+    'journal_list': 's08_journal_parser.list_configs()',
+    'journal_validate': 's08_journal_parser.validate_config()',
+    'journal_compare': 's08_journal_parser.compare_manuscript()',
+    'journal_parse': 's08_journal_parser.parse_guidelines()',
+    'audit_data': 'data_audit.main()',
 }
 ```
+
 
 ### Utility Dependencies
 
@@ -452,17 +487,15 @@ pytest --cov=src tests/
 - Process in chunks when memory-constrained
 - Leverage pandas query optimization
 
-### Parallel Processing
+### Parallel Processing (Optional)
 
-- Independent stages can run in parallel
-- Figure generation supports parallelization
-- Use `multiprocessing` for CPU-bound tasks
+- Stages are independent by design, but no built-in parallel runner is provided
+- If you add parallelization, keep outputs deterministic and document ordering assumptions
 
-### Caching
+### Caching (Optional)
 
-- Intermediate outputs saved as parquet
-- Skip stages if output exists and inputs unchanged
-- Use `--force` flag to override caching
+- Intermediate outputs are saved as parquet by each stage
+- If you add caching or skip logic, document the criteria and provide an explicit override flag
 
 ## Error Handling
 

@@ -44,7 +44,7 @@ Available commands:
 
 **Project Migration (see [AGENT_TOOLS.md](AGENT_TOOLS.md)):**
 - `analyze_project` - Analyze external project structure
-- `map_project` - Map project to template format
+- `map_project` - Map project to platform structure
 - `plan_migration` - Generate migration plan
 - `migrate_project` - Execute migration
 

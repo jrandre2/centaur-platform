@@ -20,10 +20,10 @@
 - [ ] **SETUP**: Create virtual environment
   - Details: python -m venv .venv
 
-- [ ] **SETUP**: Copy template CLAUDE.md
+- [ ] **SETUP**: Copy platform CLAUDE.md
   - Details: Copy AI agent instructions
 
-- [ ] **SETUP**: Copy template requirements.txt
+- [ ] **SETUP**: Copy platform requirements.txt
   - Details: Base dependencies
 
 ### Copy
@@ -40,17 +40,17 @@
 
 - [ ] **COPY**: Copy outputs/*
   - From: `outputs/*`
-  - To: `figures/`
+  - To: `manuscript_quarto/figures/`
   - Details: Output files
 
 - [ ] **COPY**: Copy figures/*
   - From: `figures/*`
-  - To: `figures/`
+  - To: `manuscript_quarto/figures/`
   - Details: Output files
 
 - [ ] **COPY**: Copy figures/*
   - From: `figures/*`
-  - To: `figures/`
+  - To: `manuscript_quarto/figures/`
   - Details: Output files
 
 - [ ] **COPY**: Copy docs/*
@@ -98,7 +98,7 @@
   - Details: pytest tests/
 
 - [ ] **VERIFY**: Verify data loading
-  - Details: python src/pipeline.py ingest_data --demo
+  - Details: python src/pipeline.py ingest_data
 
 - [ ] **VERIFY**: Check documentation links
   - Details: Verify all doc references

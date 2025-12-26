@@ -1,27 +1,63 @@
-# [Project Title]
+<p align="center">
+  <img src="assets/centaur_logo.png" alt="Research Project Management Platform Logo" width="400">
+</p>
 
-[One-paragraph description of the research project]
+# Research Project Management Platform
+
+[![License: PolyForm Noncommercial 1.0.0](https://img.shields.io/badge/License-PolyForm%20Noncommercial%201.0.0-blue.svg)](https://polyformproject.org/licenses/noncommercial/1.0.0)
+[![Docs License: CC BY-NC 4.0](https://img.shields.io/badge/Docs%20License-CC%20BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/)
+
+Workflow platform for building research pipelines, validating manuscripts, and migrating legacy projects into a standardized structure. This repository provides the platform and scaffold, not a project-specific analysis.
+
+Licensing: code is PolyForm Noncommercial 1.0.0 and documentation/manuscript content is CC BY-NC 4.0.
+
+## What This Platform Provides
+
+- Modular data and analysis pipeline (ingest, link, panel, estimate, robustness, figures)
+- Quarto manuscript with journal profiles and validation checks
+- Synthetic peer review workflow and tracking
+- Journal configuration parsing and comparison tools
+- Project migration tools for onboarding legacy codebases
+- Data audit utilities for sample attrition and diagnostics
+
+## Workflow Notes
+
+Journal configuration is optional. If you have not set a journal config yet, skip `validate_submission` and render with Quarto only. When a journal config is available, `validate_submission` enforces word counts, section requirements, and formatting rules.
+
+Review/versioning is handled through `review_new`, `review_verify`, and `review_archive`, with `manuscript_quarto/REVISION_TRACKER.md` and `doc/reviews/archive/` preserving review cycles and responses.
+
+Divergent manuscript drafts can be managed as variants in `manuscript_quarto/variants/` (see `doc/MANUSCRIPT_VARIANTS.md`).
 
 ## Quick Start
 
 ```bash
-# Setup
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 
-# Run pipeline
+# Run the pipeline (ingest_data generates synthetic demo data if data_raw/ is empty)
 python src/pipeline.py ingest_data
 python src/pipeline.py link_records
 python src/pipeline.py build_panel
-python src/pipeline.py run_estimation
-
-# Generate figures
+python src/pipeline.py run_estimation --specification baseline
+python src/pipeline.py estimate_robustness
 python src/pipeline.py make_figures
 
 # Render manuscript
 cd manuscript_quarto && ./render_all.sh
 ```
+
+## Minimal Demo
+
+See `demo/README.md` for a small sample dataset and expected outputs that exercise the full data → manuscript path.
+
+## Using This Platform for a New Project
+
+1. Copy or fork this repository as the starting scaffold for a new project.
+2. Update `CLAUDE.md`, `README.md`, and `doc/` to reflect the new project.
+3. Configure stage constants in `src/stages/` and define variables in `doc/DATA_DICTIONARY.md`.
+4. Add raw data to `data_raw/` and run the pipeline.
+5. Customize journal profiles in `manuscript_quarto/journal_configs/` and write the manuscript.
 
 ## Project Structure
 
@@ -32,25 +68,41 @@ cd manuscript_quarto && ./render_all.sh
 │
 ├── doc/                   # Documentation
 │   ├── README.md          # Documentation index
-│   ├── PIPELINE.md        # Pipeline stages
-│   ├── METHODOLOGY.md     # Statistical methods
-│   ├── DATA_DICTIONARY.md # Variable definitions
+│   ├── PIPELINE.md        # Pipeline stages and CLI
+│   ├── ARCHITECTURE.md    # System design
+│   ├── METHODOLOGY.md     # Methods template
+│   ├── DATA_DICTIONARY.md # Variable definitions template
+│   ├── SYNTHETIC_REVIEW_PROCESS.md
 │   ├── agents.md          # AI agent guidelines
 │   └── skills.md          # Available skills/actions
 │
-├── src/                   # Analysis pipeline
+├── demo/                  # Minimal end-to-end demo
+│   ├── README.md          # Demo steps and expected outputs
+│   └── sample_data.csv    # Small sample dataset
+│
+├── src/                   # Pipeline and tools
 │   ├── pipeline.py        # CLI entry point
-│   ├── stages/            # Numbered pipeline stages
+│   ├── data_audit.py      # Data audit utilities
+│   ├── stages/            # Pipeline and workflow stages
 │   │   ├── s00_ingest.py
 │   │   ├── s01_link.py
 │   │   ├── s02_panel.py
 │   │   ├── s03_estimation.py
 │   │   ├── s04_robustness.py
 │   │   ├── s05_figures.py
-│   │   └── s06_manuscript.py
+│   │   ├── s06_manuscript.py
+│   │   ├── s07_reviews.py
+│   │   └── s08_journal_parser.py
+│   ├── agents/            # Project migration tools
+│   │   ├── project_analyzer.py
+│   │   ├── structure_mapper.py
+│   │   ├── migration_planner.py
+│   │   └── migration_executor.py
 │   └── utils/
 │       ├── figure_style.py
-│       └── helpers.py
+│       ├── helpers.py
+│       ├── synthetic_data.py
+│       └── validation.py
 │
 ├── manuscript_quarto/     # Quarto manuscript
 │   ├── _quarto.yml        # Main configuration
@@ -60,33 +112,60 @@ cd manuscript_quarto && ./render_all.sh
 │   ├── index.qmd          # Main manuscript
 │   ├── appendix-*.qmd     # Appendices
 │   ├── references.bib     # Bibliography
+│   ├── variants/          # Divergent manuscript drafts
 │   ├── journal_configs/   # Journal metadata
 │   └── code/              # Rendering utilities
 │
 ├── data_raw/              # Raw data (gitignored)
 ├── data_work/             # Working data (gitignored)
-├── figures/               # Output figures
+├── figures/               # Optional export figures (not used by default)
 └── tools/
     └── bin/quarto         # Quarto wrapper
 ```
 
 ## Key Commands
 
+### Pipeline
+
 | Command | Purpose |
 |---------|---------|
-| `python src/pipeline.py ingest_data` | Load raw data |
+| `python src/pipeline.py ingest_data` | Load raw data or generate demo data |
 | `python src/pipeline.py link_records` | Link data sources |
 | `python src/pipeline.py build_panel` | Create analysis panel |
-| `python src/pipeline.py run_estimation` | Run estimation |
+| `python src/pipeline.py run_estimation --specification baseline` | Run estimation |
 | `python src/pipeline.py estimate_robustness` | Robustness checks |
 | `python src/pipeline.py make_figures` | Generate figures |
-| `python src/pipeline.py validate_submission` | Check journal requirements |
-| `./manuscript_quarto/render_all.sh` | Render manuscript (all formats) |
-| `./manuscript_quarto/render_all.sh --profile jeem` | Render for JEEM |
+| `python src/pipeline.py validate_submission --journal jeem --report` | Validate manuscript |
+
+### Review Management
+
+- `python src/pipeline.py review_status`
+- `python src/pipeline.py review_new --discipline economics`
+- `python src/pipeline.py review_verify`
+- `python src/pipeline.py review_archive`
+- `python src/pipeline.py review_report`
+
+### Journal Tools
+
+- `python src/pipeline.py journal_list`
+- `python src/pipeline.py journal_validate --config natural_hazards`
+- `python src/pipeline.py journal_compare --journal natural_hazards`
+- `python src/pipeline.py journal_parse --input guidelines.txt --output new_journal.yml`
+
+### Data Audit
+
+- `python src/pipeline.py audit_data --full --report`
+
+### Project Migration
+
+- `python src/pipeline.py analyze_project --path /path/to/project`
+- `python src/pipeline.py map_project --path /path/to/project`
+- `python src/pipeline.py plan_migration --path /source --target /target`
+- `python src/pipeline.py migrate_project --path /source --target /target --dry-run`
 
 ## Journal Profiles
 
-The manuscript can be rendered for different journals:
+Render with journal-specific profiles:
 
 ```bash
 cd manuscript_quarto
@@ -95,17 +174,15 @@ cd manuscript_quarto
 ./render_all.sh --profile aer      # AER submission format
 ```
 
-See `manuscript_quarto/journal_configs/` for journal-specific requirements.
+If Quarto is not installed system-wide, use the wrapper at `tools/bin/quarto`.
 
 ## Documentation
 
-See `doc/README.md` for complete documentation index.
-
-## Authors
-
-- [Author 1] ([email])
-- [Author 2] ([email])
+See `doc/README.md` for the full documentation index.
 
 ## License
 
-[License information]
+Copyright (c) 2025 Jesse R. Andrews <jesseand@ttu.edu>
+
+Code in this repository is licensed under the PolyForm Noncommercial License 1.0.0 (see `LICENSE`).
+Documentation and manuscript content (including `doc/` and `manuscript_quarto/`) are licensed under CC BY-NC 4.0 (see `LICENSE-DOCS`).

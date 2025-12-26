@@ -280,7 +280,9 @@ def validate_input(df: pd.DataFrame) -> bool:
         print(report.format())
         return False
 
-    print(f"    All validations passed ({report.passed}/{report.total})")
+    passed = sum(1 for r in report.results if r.passed)
+    total = len(report.results)
+    print(f"    All validations passed ({passed}/{total})")
     return True
 
 

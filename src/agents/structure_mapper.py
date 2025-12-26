@@ -112,7 +112,7 @@ class StructureMapper:
         """Generate mapping from analysis to template."""
         mapping = StructureMapping(
             source_project=str(self.analysis.root_path),
-            target_template='Research Project Management Template',
+            target_template='Research Project Management Platform',
         )
 
         # Map Python modules to stages
@@ -136,7 +136,7 @@ class StructureMapper:
             if dir_info.purpose in ('generated outputs', 'figure outputs'):
                 mapping.rules.append(MappingRule(
                     source_pattern=f"{dir_info.name}/*",
-                    target_location="figures/",
+                    target_location="manuscript_quarto/figures/",
                     action="copy",
                     notes="Output files",
                 ))

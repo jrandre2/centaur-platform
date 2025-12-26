@@ -1,6 +1,6 @@
 # Tutorial: Getting Started
 
-This tutorial walks through setting up and running the research pipeline from scratch using synthetic demo data.
+This tutorial walks through setting up and running the research pipeline from scratch using platform defaults. Synthetic demo data is generated automatically when `data_raw/` has no matching input files.
 
 ## Prerequisites
 
@@ -38,22 +38,23 @@ quarto --version
 ### 1.4 Create Data Directories
 
 ```bash
-mkdir -p data_raw data_work/diagnostics figures
+mkdir -p data_raw data_work/diagnostics
 ```
+
+The pipeline creates `data_work/` and `manuscript_quarto/figures/` if missing. Use a top-level `figures/` directory only if you want a separate export copy.
 
 ## Step 2: Data Ingestion
 
-### 2.1 Using Demo Data
+### 2.1 Using Synthetic Demo Data
 
-The pipeline can generate synthetic demo data for testing:
+If `data_raw/` is empty (no matching CSV/Parquet/Excel files), `ingest_data` generates synthetic demo data automatically:
 
 ```bash
-python src/pipeline.py ingest_data --demo
+python src/pipeline.py ingest_data
 ```
 
 This creates `data_work/data_raw.parquet` with:
-- 1,000 synthetic units
-- 24 time periods
+- Synthetic panel data
 - Treatment and outcome variables
 - Covariates
 
@@ -75,14 +76,17 @@ The ingestion stage:
 3. Validates data quality
 4. Saves as parquet format
 
+To customize required columns, file patterns, or cleaning logic, edit `src/stages/s00_ingest.py`.
+
 ### 2.3 Verify Ingestion
 
 ```bash
 # Check output file
 python -c "import pandas as pd; df = pd.read_parquet('data_work/data_raw.parquet'); print(df.info())"
 
-# View validation report
-cat data_work/diagnostics/ingest_validation.csv
+# Ingest validation prints to the console by default.
+# Optional: generate a full audit report later
+python src/pipeline.py audit_data --report
 ```
 
 ## Step 3: Record Linkage
@@ -93,49 +97,29 @@ If you have multiple data sources to merge:
 python src/pipeline.py link_records
 ```
 
-For demo data (single source), this passes through with linkage metadata:
-
-```bash
-python src/pipeline.py link_records --verbose
-```
-
 Output: `data_work/data_linked.parquet`
+Diagnostics: `data_work/diagnostics/linkage_summary.csv`
 
-### Linkage Options
-
-```bash
-# Specify key columns
-python src/pipeline.py link_records --keys id entity_id
-
-# Add additional sources
-python src/pipeline.py link_records --sources additional_data.parquet
-```
+To customize matching keys or add additional sources, edit `src/stages/s01_link.py`.
 
 ## Step 4: Panel Construction
 
 Build the analysis panel with fixed effects and event study variables:
 
 ```bash
-python src/pipeline.py build_panel --verbose
+python src/pipeline.py build_panel
 ```
 
 This creates:
-- Balanced or unbalanced panel
+- Balanced or unbalanced panel (based on stage configuration)
 - Unit and time fixed effects
 - Event time indicators (for treatment timing)
 - Treatment status variables
 
-### Panel Options
-
-```bash
-# Balance panel (keep only complete observations)
-python src/pipeline.py build_panel --balance
-
-# Specify treatment timing column
-python src/pipeline.py build_panel --treatment-col treatment_start
-```
-
 Output: `data_work/panel.parquet`
+Diagnostics: `data_work/diagnostics/panel_summary.csv`
+
+To change panel balancing behavior or event study settings, edit `src/stages/s02_panel.py`.
 
 ### Verify Panel Structure
 
@@ -143,7 +127,7 @@ Output: `data_work/panel.parquet`
 python -c "
 import pandas as pd
 df = pd.read_parquet('data_work/panel.parquet')
-print('Units:', df['unit_id'].nunique())
+print('Units:', df['id'].nunique())
 print('Periods:', df['period'].nunique())
 print('Obs:', len(df))
 "
@@ -154,29 +138,30 @@ print('Obs:', len(df))
 Run the main treatment effect estimation:
 
 ```bash
-python src/pipeline.py run_estimation --verbose
+python src/pipeline.py run_estimation --specification baseline
 ```
 
-This runs all specifications defined in the specification registry:
+Default specifications (from `src/stages/s03_estimation.py`):
 
 | Specification | Description |
 |--------------|-------------|
-| `baseline` | Treatment effect only |
-| `with_controls` | Treatment + covariates |
-| `unit_fe` | Unit fixed effects |
-| `twoway_fe` | Unit + time fixed effects |
+| `baseline` | Unit and time fixed effects |
+| `no_fe` | Simple OLS without fixed effects |
+| `with_controls` | Baseline with controls |
+| `unit_fe_only` | Unit fixed effects only |
+
+Outputs:
+- `data_work/diagnostics/estimation_results.csv`
+- `data_work/diagnostics/coefficients.csv`
 
 ### Estimation Options
 
 ```bash
-# Run specific specification
-python src/pipeline.py run_estimation --spec baseline
+# Run a specific specification
+python src/pipeline.py run_estimation -s with_controls
 
-# Use robust standard errors
-python src/pipeline.py run_estimation --se robust
-
-# Cluster at different level
-python src/pipeline.py run_estimation --cluster state_id
+# Apply a sample label (custom restrictions are defined in s03_estimation.py)
+python src/pipeline.py run_estimation --sample restricted
 ```
 
 ### View Results
@@ -198,25 +183,13 @@ print(results[['specification', 'coefficient', 'std_error', 'p_value']].to_strin
 Run sensitivity analyses:
 
 ```bash
-python src/pipeline.py estimate_robustness --verbose
+python src/pipeline.py estimate_robustness
 ```
 
-This runs:
-- Placebo tests (fake treatment timing)
-- Sample restrictions (exclude endpoints, subsamples)
-- Alternative specifications
-
-### Robustness Options
-
-```bash
-# Skip placebo tests
-python src/pipeline.py estimate_robustness --no-placebos
-
-# Only sample restrictions
-python src/pipeline.py estimate_robustness --samples-only
-```
+This runs placebo tests, sample restrictions, and alternative specifications defined in `src/stages/s04_robustness.py`.
 
 Output: `data_work/diagnostics/robustness_results.csv`
+Additional: `data_work/diagnostics/placebo_results.csv`
 
 ## Step 7: Figure Generation
 
@@ -226,25 +199,12 @@ Create publication-quality figures:
 python src/pipeline.py make_figures
 ```
 
-Generated figures:
-- `figures/fig_event_study.png` - Dynamic treatment effects
-- `figures/fig_trends.png` - Treatment vs. control trends
-- `figures/fig_coefficients.png` - Coefficient comparison
-- `figures/fig_robustness.png` - Robustness results
-- `figures/fig_distribution.png` - Outcome distribution
-
-### Figure Options
-
-```bash
-# Generate specific figure
-python src/pipeline.py make_figures --only event_study
-
-# Use different style
-python src/pipeline.py make_figures --style presentation
-
-# Custom output directory
-python src/pipeline.py make_figures --output manuscript_quarto/figures/
-```
+Generated figures (saved to `manuscript_quarto/figures/`):
+- `manuscript_quarto/figures/fig_event_study.png` - Dynamic treatment effects
+- `manuscript_quarto/figures/fig_trends.png` - Treatment vs. control trends
+- `manuscript_quarto/figures/fig_coefficients.png` - Coefficient comparison
+- `manuscript_quarto/figures/fig_robustness.png` - Robustness results
+- `manuscript_quarto/figures/fig_distribution.png` - Outcome distribution
 
 ### Customize Figure Style
 
@@ -253,6 +213,8 @@ Edit `src/utils/figure_style.py` to modify:
 - Font sizes
 - Figure dimensions
 - Journal-specific presets
+
+To add or remove figures, edit the `all_figures` registry in `src/stages/s05_figures.py`.
 
 ## Step 8: Manuscript Validation
 
@@ -288,6 +250,8 @@ Ensure Quarto is installed:
 quarto --version
 ```
 
+If Quarto is not installed system-wide, use the wrapper in `tools/bin/quarto`.
+
 ### Render All Formats
 
 ```bash
@@ -297,8 +261,10 @@ cd manuscript_quarto
 
 This creates:
 - `_output/index.html` - Web version
-- `_output/Manuscript.pdf` - PDF version
-- `_output/Manuscript.docx` - Word version
+- `_output/[Your-Paper-Title].pdf` - PDF version
+- `_output/[Your-Paper-Title].docx` - Word version
+
+PDF/DOCX filenames follow the `book.title` in `manuscript_quarto/_quarto.yml`.
 
 ### Render with Journal Profile
 
@@ -313,7 +279,7 @@ quarto render --profile custom_journal
 ### Preview During Writing
 
 ```bash
-quarto preview
+../tools/bin/quarto preview
 ```
 
 Opens live preview in browser, auto-refreshes on file changes.
@@ -348,7 +314,7 @@ Run the entire pipeline:
 source .venv/bin/activate
 
 # Run all stages
-python src/pipeline.py ingest_data --demo
+python src/pipeline.py ingest_data
 python src/pipeline.py link_records
 python src/pipeline.py build_panel
 python src/pipeline.py run_estimation
@@ -372,7 +338,7 @@ source .venv/bin/activate
 
 echo "Running research pipeline..."
 
-python src/pipeline.py ingest_data --demo
+python src/pipeline.py ingest_data
 python src/pipeline.py link_records
 python src/pipeline.py build_panel
 python src/pipeline.py run_estimation

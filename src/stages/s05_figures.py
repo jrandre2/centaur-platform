@@ -17,7 +17,6 @@ Input Files
 
 Output Files
 ------------
-- figures/*.png
 - manuscript_quarto/figures/*.png
 
 Usage

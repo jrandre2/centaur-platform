@@ -25,7 +25,7 @@ estimate_robustness : Run robustness checks
 
 # Figures and Manuscript
 make_figures : Generate publication figures
-    Output: figures/*.png
+    Output: manuscript_quarto/figures/*.png
 validate_submission : Validate against journal requirements
     Options: --journal, --report
 

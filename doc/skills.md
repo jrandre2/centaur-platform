@@ -43,7 +43,7 @@ Run primary estimation.
 
 ```bash
 python src/pipeline.py run_estimation --specification baseline
-python src/pipeline.py run_estimation -s robustness --sample restricted
+python src/pipeline.py run_estimation -s with_controls --sample restricted
 ```
 
 **Options:**
@@ -70,7 +70,7 @@ Generate publication figures.
 python src/pipeline.py make_figures
 ```
 
-**Output:** `figures/*.png`
+**Output:** `manuscript_quarto/figures/*.png`
 
 ### /validate
 
@@ -101,7 +101,7 @@ Shows summary statistics, pending items, and verification progress.
 
 ### /review-new
 
-Start a new review cycle with discipline-specific template.
+Start a new review cycle with a discipline-specific prompt.
 
 ```bash
 python src/pipeline.py review_new --discipline economics
@@ -178,6 +178,30 @@ cd manuscript_quarto && ./render_all.sh --profile nhaz
 - `aer` - American Economic Review
 - `nhaz` - Natural Hazards (Springer)
 
+### /variant-new
+
+Create a divergent manuscript variant and capture provenance.
+
+```bash
+cd manuscript_quarto && ./variant_new.sh <name>
+```
+
+### /variant-snapshot
+
+Refresh variant provenance.
+
+```bash
+cd manuscript_quarto && python variant_tools.py snapshot --variant <name>
+```
+
+### /variant-compare
+
+Compare two variants.
+
+```bash
+cd manuscript_quarto && python variant_tools.py compare --left <a> --right <b>
+```
+
 ### /preview
 
 Live preview manuscript.
@@ -198,7 +222,7 @@ List available journal configurations.
 python src/pipeline.py journal_list
 ```
 
-Shows all available journal configs and templates in `manuscript_quarto/journal_configs/`.
+Shows all available journal configs and template files in `manuscript_quarto/journal_configs/`.
 
 ### /journal-validate
 
@@ -287,7 +311,7 @@ cp data_work/diagnostics/*.csv manuscript_quarto/data/
 
 ### /sync-figures
 
-Copy figures to manuscript figures folder.
+Copy figures to the manuscript figures folder (only needed if you export to `figures/`).
 
 ```bash
 cp figures/*.png manuscript_quarto/figures/
@@ -362,7 +386,7 @@ python src/pipeline.py build_panel
 
 ## Project Migration Skills
 
-AI-powered tools for analyzing and migrating external research projects to the standardized template format.
+AI-powered tools for analyzing and migrating external research projects to the standardized platform structure.
 
 ### /analyze-project
 
@@ -385,7 +409,7 @@ python src/pipeline.py analyze_project --path /path/to/project --output analysis
 
 ### /map-project
 
-Map an analyzed project's structure to the template format.
+Map an analyzed project's structure to the platform structure.
 
 ```bash
 python src/pipeline.py map_project --path /path/to/project
@@ -398,14 +422,14 @@ python src/pipeline.py map_project --path /path/to/project --output mapping.json
 
 **Mapping categories:**
 - Data files → `data_raw/`
-- Output files → `figures/`
+- Output files → `manuscript_quarto/figures/` (primary)
 - Documentation → `doc/`
 - Tests → `tests/`
 - Python modules → `src/stages/s00-s07.py` (based on content keywords)
 
 ### /plan-migration
 
-Generate a detailed migration plan for moving a project to the template format.
+Generate a detailed migration plan for moving a project to the platform structure.
 
 ```bash
 python src/pipeline.py plan_migration --path /source --target /target

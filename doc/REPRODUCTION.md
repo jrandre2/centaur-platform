@@ -1,14 +1,14 @@
 # Reproduction Guide
 
 **Related**: [PIPELINE.md](PIPELINE.md) | [DATA_DICTIONARY.md](DATA_DICTIONARY.md)
-**Status**: Active
-**Last Updated**: [Date]
+**Status**: Template
+**Last Updated**: 2025-12-25
 
 ---
 
 ## Overview
 
-This guide documents how to reproduce the analysis from scratch.
+This guide documents how to reproduce the analysis from scratch. This file is a template; replace bracketed placeholders with project-specific instructions.
 
 ---
 
@@ -108,8 +108,8 @@ cd manuscript_quarto
 
 | File | Description |
 |------|-------------|
-| `figures/[fig1].png` | [Description] |
-| `figures/[fig2].png` | [Description] |
+| `manuscript_quarto/figures/[fig1].png` | [Description] |
+| `manuscript_quarto/figures/[fig2].png` | [Description] |
 
 ### Manuscript
 

@@ -11,7 +11,7 @@ AI-powered project analysis and migration tools.
 The `src/agents/` package provides tools for:
 
 - Analyzing existing research project structures
-- Mapping projects to the standardized template format
+- Mapping projects to the standardized platform structure
 - Generating migration plans
 - Executing automated migrations
 
@@ -24,7 +24,7 @@ source .venv/bin/activate
 # Analyze a project
 python src/pipeline.py analyze_project --path /path/to/project
 
-# Map to template structure
+# Map to platform structure
 python src/pipeline.py map_project --path /path/to/project
 
 # Generate migration plan
@@ -85,7 +85,7 @@ json_output = analysis.to_json()
 
 **File:** `src/agents/structure_mapper.py`
 
-Maps analyzed projects to template stages based on content analysis.
+Maps analyzed projects to platform stages based on content analysis.
 
 **Classes:**
 
@@ -114,7 +114,7 @@ print(mapping.summary())
 | Source Content | Target Location |
 |----------------|-----------------|
 | `data/`, `raw/` | `data_raw/` |
-| `output/`, `results/` | `figures/` |
+| `output/`, `results/` | `manuscript_quarto/figures/` |
 | `docs/`, `documentation/` | `doc/` |
 | `tests/`, `test/` | `tests/` |
 

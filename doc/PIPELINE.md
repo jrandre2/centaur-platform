@@ -2,7 +2,7 @@
 
 **Related**: [DATA_DICTIONARY.md](DATA_DICTIONARY.md) | [METHODOLOGY.md](METHODOLOGY.md)
 **Status**: Active
-**Last Updated**: [Date]
+**Last Updated**: 2025-12-25
 
 ---
 
@@ -15,25 +15,41 @@ source .venv/bin/activate
 python src/pipeline.py ingest_data
 python src/pipeline.py link_records
 python src/pipeline.py build_panel
-python src/pipeline.py run_estimation
+python src/pipeline.py run_estimation --specification baseline
+python src/pipeline.py estimate_robustness
 python src/pipeline.py make_figures
 
 # Render manuscript
 cd manuscript_quarto && ./render_all.sh
 ```
 
+Note: `ingest_data` generates synthetic demo data if `data_raw/` has no matching files.
+
+Journal validation is optional. If no journal config is set, skip `validate_submission` and render with Quarto only. When a journal config exists, `validate_submission` enforces word counts, section requirements, and formatting rules.
+
+Review cycles are handled through `review_new`, `review_verify`, and `review_archive`, with `manuscript_quarto/REVISION_TRACKER.md` and `doc/reviews/archive/` preserving responses. Divergent drafts use manuscript variants (see `doc/MANUSCRIPT_VARIANTS.md`).
+
 ---
 
 ## Pipeline Overview
 
 ```
-data_raw/ ──► ingest_data ──► link_records ──► build_panel ──► panel.parquet
-                                                                    │
-                                                                    ▼
-figures/ ◄── make_figures ◄── run_estimation ──► diagnostics/*.csv
-    │
-    ▼
-manuscript_quarto/figures/ ──► render_all.sh ──► _output/
+data_raw/ ──► ingest_data ──► data_work/data_raw.parquet
+                           │
+                           ▼
+                link_records ──► data_work/data_linked.parquet
+                           │           └─► data_work/diagnostics/linkage_summary.csv
+                           ▼
+                build_panel ──► data_work/panel.parquet
+                           │           └─► data_work/diagnostics/panel_summary.csv
+                           ▼
+             run_estimation ──► data_work/diagnostics/estimation_results.csv
+                           │           └─► data_work/diagnostics/coefficients.csv
+                           ▼
+          estimate_robustness ──► data_work/diagnostics/robustness_results.csv
+                           │           └─► data_work/diagnostics/placebo_results.csv
+                           ▼
+              make_figures ──► manuscript_quarto/figures/*.png ──► render_all.sh ──► manuscript_quarto/_output/
 ```
 
 ---
@@ -44,7 +60,7 @@ manuscript_quarto/figures/ ──► render_all.sh ──► _output/
 
 **Command:** `python src/pipeline.py ingest_data`
 
-**Purpose:** Load and preprocess raw data files.
+**Purpose:** Load and preprocess raw data files. Generates synthetic demo data if no inputs exist in `data_raw/`.
 
 **Input:** `data_raw/`
 **Output:** `data_work/data_raw.parquet`
@@ -61,6 +77,7 @@ manuscript_quarto/figures/ ──► render_all.sh ──► _output/
 
 **Input:** `data_work/data_raw.parquet`
 **Output:** `data_work/data_linked.parquet`
+**Diagnostics:** `data_work/diagnostics/linkage_summary.csv`
 
 **Implementation:** `src/stages/s01_link.py`
 
@@ -74,6 +91,7 @@ manuscript_quarto/figures/ ──► render_all.sh ──► _output/
 
 **Input:** `data_work/data_linked.parquet`
 **Output:** `data_work/panel.parquet`
+**Diagnostics:** `data_work/diagnostics/panel_summary.csv`
 
 **Implementation:** `src/stages/s02_panel.py`
 
@@ -90,7 +108,7 @@ manuscript_quarto/figures/ ──► render_all.sh ──► _output/
 **Purpose:** Run primary estimation specifications.
 
 **Input:** `data_work/panel.parquet`
-**Output:** `data_work/diagnostics/*.csv`
+**Output:** `data_work/diagnostics/estimation_results.csv`, `data_work/diagnostics/coefficients.csv`
 
 **Implementation:** `src/stages/s03_estimation.py`
 
@@ -103,7 +121,7 @@ manuscript_quarto/figures/ ──► render_all.sh ──► _output/
 **Purpose:** Run robustness specifications and sensitivity analyses.
 
 **Input:** `data_work/panel.parquet`
-**Output:** `data_work/diagnostics/robustness_*.csv`
+**Output:** `data_work/diagnostics/robustness_results.csv`, `data_work/diagnostics/placebo_results.csv`
 
 **Implementation:** `src/stages/s04_robustness.py`
 
@@ -116,9 +134,11 @@ manuscript_quarto/figures/ ──► render_all.sh ──► _output/
 **Purpose:** Generate publication-quality figures.
 
 **Input:** `data_work/panel.parquet`, `data_work/diagnostics/*.csv`
-**Output:** `figures/*.png`
+**Output:** `manuscript_quarto/figures/*.png`
 
 **Implementation:** `src/stages/s05_figures.py`
+
+If you need a top-level export, copy from `manuscript_quarto/figures/` to `figures/`.
 
 ---
 
@@ -132,7 +152,45 @@ manuscript_quarto/figures/ ──► render_all.sh ──► _output/
 
 **Purpose:** Validate manuscript against journal requirements.
 
+**Output (with `--report`):** `data_work/diagnostics/submission_validation.md`
+
 **Implementation:** `src/stages/s06_manuscript.py`
+
+---
+
+### Stage 07: Review Management
+
+**Commands:**
+- `python src/pipeline.py review_status`
+- `python src/pipeline.py review_new --discipline economics`
+- `python src/pipeline.py review_verify`
+- `python src/pipeline.py review_archive`
+- `python src/pipeline.py review_report`
+
+**Purpose:** Manage synthetic peer review cycles and track responses.
+
+**Outputs:**
+- `manuscript_quarto/REVISION_TRACKER.md`
+- `doc/reviews/archive/` (archived reviews)
+
+**Implementation:** `src/stages/s07_reviews.py`
+
+---
+
+### Stage 08: Journal Configuration Tools
+
+**Commands:**
+- `python src/pipeline.py journal_list`
+- `python src/pipeline.py journal_validate --config natural_hazards`
+- `python src/pipeline.py journal_compare --journal natural_hazards`
+- `python src/pipeline.py journal_parse --input guidelines.txt --output new_journal.yml`
+
+**Purpose:** List, validate, compare, and parse journal requirements.
+
+**Outputs:**
+- `manuscript_quarto/journal_configs/<name>.yml` (for `journal_parse`)
+
+**Implementation:** `src/stages/s08_journal_parser.py`
 
 ---
 
@@ -150,6 +208,8 @@ Output in `manuscript_quarto/_output/`:
 - PDF
 - DOCX
 
+PDF/DOCX filenames follow the `book.title` in `manuscript_quarto/_quarto.yml`.
+
 ### Journal-Specific Rendering
 
 ```bash
@@ -166,6 +226,18 @@ cd manuscript_quarto
 
 ---
 
+## Data Audit
+
+```bash
+python src/pipeline.py audit_data
+python src/pipeline.py audit_data --full
+python src/pipeline.py audit_data --full --report
+```
+
+`audit_data` prints a summary to the console and optionally writes a markdown report to `data_work/diagnostics/`.
+
+---
+
 ## Common Workflows
 
 ### Full Rebuild
@@ -176,6 +248,7 @@ python src/pipeline.py ingest_data
 python src/pipeline.py link_records
 python src/pipeline.py build_panel
 python src/pipeline.py run_estimation
+python src/pipeline.py estimate_robustness
 python src/pipeline.py make_figures
 cd manuscript_quarto && ./render_all.sh
 ```
@@ -187,6 +260,7 @@ python src/pipeline.py ingest_data
 python src/pipeline.py link_records
 python src/pipeline.py build_panel
 python src/pipeline.py run_estimation
+python src/pipeline.py estimate_robustness
 python src/pipeline.py make_figures
 ```
 
@@ -194,6 +268,11 @@ python src/pipeline.py make_figures
 
 ```bash
 python src/pipeline.py make_figures
-cp figures/*.png manuscript_quarto/figures/
 cd manuscript_quarto && ./render_all.sh
 ```
+
+---
+
+## Minimal Demo
+
+See `demo/README.md` for a small sample dataset and expected outputs that exercise the full data → manuscript path.

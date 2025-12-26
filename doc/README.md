@@ -1,7 +1,8 @@
 # Documentation Index
 
-**Project**: Research Project Management Software
-**Last Updated**: [Date]
+**Project**: Research Project Management Platform
+**Scope**: Platform, scaffold, and workflow tools (not project-specific analysis)
+**Last Updated**: 2025-12-25
 
 ---
 
@@ -31,7 +32,8 @@
 | Document | Purpose |
 |----------|---------|
 | [TUTORIAL.md](TUTORIAL.md) | Getting started with demo data |
-| [CUSTOMIZATION.md](CUSTOMIZATION.md) | Adapting template to your project |
+| [CUSTOMIZATION.md](CUSTOMIZATION.md) | Adapting platform scaffold to your project |
+| [MANUSCRIPT_VARIANTS.md](MANUSCRIPT_VARIANTS.md) | Managing divergent manuscript drafts |
 | [REPRODUCTION.md](REPRODUCTION.md) | Running analysis from scratch |
 | [agents.md](agents.md) | AI agent guidelines |
 | [skills.md](skills.md) | Available skills/actions |
@@ -59,9 +61,9 @@
 
 ### Data Processing
 ```bash
-python src/pipeline.py ingest_data [--demo]     # Load and clean data
-python src/pipeline.py link_records             # Link data sources
-python src/pipeline.py build_panel [--balance]  # Construct panel
+python src/pipeline.py ingest_data     # Load raw data (or generate demo data if empty)
+python src/pipeline.py link_records    # Link data sources
+python src/pipeline.py build_panel     # Construct panel
 ```
 
 ### Analysis
@@ -79,6 +81,16 @@ python src/pipeline.py audit_data [--full]      # Audit data files
 
 ---
 
+## Journal Configuration
+
+**CLI Commands:**
+- `python src/pipeline.py journal_list` - List available configs
+- `python src/pipeline.py journal_validate --config natural_hazards` - Validate config
+- `python src/pipeline.py journal_compare --journal natural_hazards` - Compare manuscript
+- `python src/pipeline.py journal_parse --input guidelines.txt --output new_journal.yml` - Parse guidelines
+
+---
+
 ## Status Tracking
 
 | Document | Purpose |
@@ -92,7 +104,9 @@ python src/pipeline.py audit_data [--full]      # Audit data files
 | Directory | Purpose |
 |-----------|---------|
 | `src/pipeline.py` | Main CLI entry point |
-| `src/stages/` | Pipeline stage modules (s00-s07) |
+| `src/data_audit.py` | Data auditing utilities |
+| `src/stages/` | Pipeline and workflow stages (s00-s08) |
+| `src/agents/` | Project migration tools |
 | `src/utils/` | Shared utilities |
 | `tests/` | Test suite |
 
@@ -122,7 +136,7 @@ AI-powered tools for analyzing and migrating external research projects.
 | Module | Purpose |
 |--------|---------|
 | `agents/project_analyzer.py` | Scan and analyze project structures |
-| `agents/structure_mapper.py` | Map modules to template stages |
+| `agents/structure_mapper.py` | Map modules to platform stages |
 | `agents/migration_planner.py` | Generate migration plans |
 | `agents/migration_executor.py` | Execute migrations |
 
