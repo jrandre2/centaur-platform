@@ -1,6 +1,6 @@
 # Documentation Index
 
-**Project**: Research Project Management Platform
+**Project**: CENTAUR (Computational Environment for Navigating Tasks in Automated University Research)
 **Scope**: Platform, scaffold, and workflow tools (not project-specific analysis)
 **Last Updated**: 2025-12-25
 

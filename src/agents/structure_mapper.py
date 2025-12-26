@@ -112,7 +112,7 @@ class StructureMapper:
         """Generate mapping from analysis to template."""
         mapping = StructureMapping(
             source_project=str(self.analysis.root_path),
-            target_template='Research Project Management Platform',
+            target_template='CENTAUR',
         )
 
         # Map Python modules to stages

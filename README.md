@@ -1,8 +1,10 @@
 <p align="center">
-  <img src="assets/centaur_logo.png?v=3" alt="Research Project Management Platform Logo" width="400">
+  <img src="assets/centaur_logo.png?v=3" alt="CENTAUR Logo" width="400">
 </p>
 
-# Research Project Management Platform
+# CENTAUR
+
+**C**omputational **E**nvironment for **N**avigating **T**asks in **A**utomated **U**niversity **R**esearch
 
 [![License: PolyForm Noncommercial 1.0.0](https://img.shields.io/badge/License-PolyForm%20Noncommercial%201.0.0-blue.svg)](https://polyformproject.org/licenses/noncommercial/1.0.0)
 [![Docs License: CC BY-NC 4.0](https://img.shields.io/badge/Docs%20License-CC%20BY--NC%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-nc/4.0/)

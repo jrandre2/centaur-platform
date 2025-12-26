@@ -1,4 +1,6 @@
-# Research Project Management Platform - Claude Code Instructions
+# CENTAUR - Claude Code Instructions
+
+**C**omputational **E**nvironment for **N**avigating **T**asks in **A**utomated **U**niversity **R**esearch
 
 ## Quick Start
 

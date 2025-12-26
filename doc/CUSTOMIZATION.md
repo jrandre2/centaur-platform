@@ -1,6 +1,6 @@
 # Customization Guide
 
-This guide explains how to adapt the Research Project Management Platform to your specific research project.
+This guide explains how to adapt CENTAUR to your specific research project.
 
 ## Overview
 

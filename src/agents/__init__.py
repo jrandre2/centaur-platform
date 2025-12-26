@@ -1,5 +1,5 @@
 """
-AI Agents for Research Project Management
+AI Agents for CENTAUR
 
 This package provides AI-powered tools for:
 - Analyzing existing research project structures

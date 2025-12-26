@@ -1,6 +1,6 @@
 # System Architecture
 
-This document describes the architecture of the Research Project Management Platform, including data flow, component relationships, and extension points.
+This document describes the architecture of CENTAUR (Computational Environment for Navigating Tasks in Automated University Research), including data flow, component relationships, and extension points.
 
 ## Overview
 
