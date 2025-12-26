@@ -5,6 +5,10 @@
 # - 1.5 line spacing for review
 # - 12pt font
 # - Standard article class
+# - Chicago Author-Date citation style
+
+# Citation style for AER (overrides default)
+csl: csl/chicago-author-date.csl
 
 format:
   pdf:

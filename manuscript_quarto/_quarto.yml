@@ -56,7 +56,7 @@ format:
     highlight-style: github
 
 bibliography: references.bib
-csl: apa.csl
+csl: csl/apa.csl  # Default citation style; override per-journal in profile files
 
 execute:
   freeze: auto

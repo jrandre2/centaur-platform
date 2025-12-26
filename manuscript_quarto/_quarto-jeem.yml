@@ -5,6 +5,10 @@
 # - Double-spaced PDF for review
 # - No TOC in submission version
 # - Standard article class
+# - Chicago Author-Date citation style
+
+# Citation style for JEEM (overrides default)
+csl: csl/chicago-author-date.csl
 
 format:
   pdf:
