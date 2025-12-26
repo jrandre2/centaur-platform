@@ -1,4 +1,4 @@
-# [Project Name] - Claude Code Instructions
+# Research Project Management Software - Claude Code Instructions
 
 ## Quick Start
 
@@ -23,35 +23,59 @@ python src/pipeline.py review_status              # Check status
 python src/pipeline.py review_new -d economics    # Start new review
 python src/pipeline.py review_verify              # Run verification
 python src/pipeline.py review_archive             # Archive completed
+
+# Project migration tools
+python src/pipeline.py analyze_project --path /path/to/project
+python src/pipeline.py map_project --path /path/to/project
+python src/pipeline.py plan_migration --path /source --target /target
+python src/pipeline.py migrate_project --path /source --target /target --dry-run
 ```
 
 ## Key Concepts
 
-### [Your Domain Concepts]
+### AI-Powered Project Migration
 
-[Describe the key conceptual framework for your research. Example:]
+This software provides tools for analyzing and migrating existing research projects to a standardized template format.
 
-1. **[Concept 1]** - [Description]
-2. **[Concept 2]** - [Description]
+1. **Project Analyzer** - Scans project directories, extracts Python module metadata (imports, functions, classes, docstrings)
+2. **Structure Mapper** - Maps source modules to template stages (s00-s07) based on content keywords
+3. **Migration Planner** - Generates actionable migration plans with setup, copy, transform, generate, and verify steps
+4. **Migration Executor** - Executes plans with dry-run support, creates scaffold files for manual code merge
+
+### Template Stage Pattern
+
+| Stage | Purpose | Keywords |
+|-------|---------|----------|
+| `s00_ingest.py` | Data ingestion | load, ingest, read |
+| `s01_link.py` | Record linkage | link, merge, join |
+| `s02_panel.py` | Panel construction | panel, construct, balance |
+| `s03_estimation.py` | Main estimation | model, estim, regress |
+| `s04_robustness.py` | Robustness checks | robust, sensitiv, placebo |
+| `s05_figures.py` | Figure generation | figure, plot, viz |
+| `s06_manuscript.py` | Manuscript validation | manuscript, valid, check |
+| `s07_reviews.py` | Review management | review, cycle |
 
 ### Data Conventions
 
-- [Describe key variable naming conventions]
-- [Describe signed distance or treatment conventions if applicable]
-- [Describe event time conventions if applicable]
+- **Source projects**: Analyzed from any directory structure
+- **Target projects**: Follow `src/stages/sXX_name.py` naming pattern
+- **Data files**: Raw data in `data_raw/`, working data in `data_work/`
+- **Outputs**: Figures in `figures/`, diagnostics in `data_work/diagnostics/`
 
 ## Critical Constraints
 
 ### DO NOT
 
 - Modify raw data in `data_raw/`
-- [Add project-specific constraints]
+- Modify source projects during migration (copy only)
+- Execute migrations without testing with `--dry-run` first
 
 ### ALWAYS
 
 - Activate `.venv` before running scripts
 - Run diagnostics after estimation changes
 - Re-render Quarto after modifying `.qmd` files
+- Review `MIGRATION_REPORT.md` after executing migrations
 
 ## Data Files
 
@@ -59,7 +83,15 @@ python src/pipeline.py review_archive             # Archive completed
 |------|---------|
 | `data_work/panel.parquet` | Main analysis panel |
 | `data_work/diagnostics/*.csv` | Estimation diagnostics |
-| [Add your key data files] | |
+
+## Agent Modules
+
+| Module | Purpose |
+|--------|---------|
+| `src/agents/project_analyzer.py` | Scan and analyze project structures |
+| `src/agents/structure_mapper.py` | Map modules to template stages |
+| `src/agents/migration_planner.py` | Generate migration plans |
+| `src/agents/migration_executor.py` | Execute migrations |
 
 ## Manuscript
 
@@ -126,6 +158,46 @@ Use synthetic reviews to stress-test methodology before submission.
 
 See `doc/SYNTHETIC_REVIEW_PROCESS.md` for full methodology.
 
+## Project Migration Tools
+
+AI-powered tools for analyzing and migrating external research projects.
+
+### Migration Workflow
+
+```bash
+# 1. Analyze project structure
+python src/pipeline.py analyze_project --path /path/to/project
+
+# 2. See how it maps to template
+python src/pipeline.py map_project --path /path/to/project
+
+# 3. Generate migration plan
+python src/pipeline.py plan_migration --path /source --target /target --output plan.md
+
+# 4. Test with dry-run
+python src/pipeline.py migrate_project --path /source --target /target --dry-run
+
+# 5. Execute migration
+python src/pipeline.py migrate_project --path /source --target /target
+```
+
+### Migration Step Categories
+
+1. **Setup** - Create directory structure, git init, virtual environment
+2. **Copy** - Transfer data, figures, docs, tests to standard locations
+3. **Transform** - Create scaffold stage files with merge instructions
+4. **Generate** - Create documentation templates (DATA_DICTIONARY.md, etc.)
+5. **Verify** - Check imports, run tests, validate documentation
+
+### Post-Migration Tasks
+
+After migration, review `MIGRATION_REPORT.md` in the target directory:
+- Complete scaffold files by merging source code
+- Fill in documentation templates
+- Run verification steps manually
+
+See `doc/AGENT_TOOLS.md` for complete module reference.
+
 ## Documentation
 
 See `doc/README.md` for complete index:
@@ -134,6 +206,7 @@ See `doc/README.md` for complete index:
 - `doc/METHODOLOGY.md` - Statistical methods
 - `doc/DATA_DICTIONARY.md` - Variable definitions
 - `doc/SYNTHETIC_REVIEW_PROCESS.md` - Review methodology
+- `doc/AGENT_TOOLS.md` - Project migration agent reference
 - `doc/agents.md` - AI agent guidelines
 - `doc/skills.md` - Available skills/actions
 

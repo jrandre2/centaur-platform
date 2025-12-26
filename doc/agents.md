@@ -2,6 +2,8 @@
 
 Guidance for AI agents working on this project.
 
+**Related**: [AGENT_TOOLS.md](AGENT_TOOLS.md) | [skills.md](skills.md)
+
 ## Project Structure
 
 ```
@@ -10,10 +12,12 @@ Guidance for AI agents working on this project.
 ├── doc/               # Documentation
 │   ├── README.md      # Doc index
 │   ├── agents.md      # This file
-│   └── skills.md      # Available skills
+│   ├── skills.md      # Available skills
+│   └── AGENT_TOOLS.md # Migration tools reference
 ├── src/               # Pipeline code
 │   ├── pipeline.py    # Main CLI
-│   └── stages/        # Pipeline stages
+│   ├── stages/        # Pipeline stages (s00-s08)
+│   └── agents/        # Project migration tools
 ├── manuscript_quarto/ # Quarto manuscript
 └── data_work/         # Working data
 ```
@@ -28,6 +32,8 @@ python src/pipeline.py <command>
 ```
 
 Available commands:
+
+**Data Processing:**
 - `ingest_data` - Load raw data
 - `link_records` - Link data sources
 - `build_panel` - Create analysis panel
@@ -35,6 +41,12 @@ Available commands:
 - `estimate_robustness` - Robustness checks
 - `make_figures` - Generate figures
 - `validate_submission` - Check journal requirements
+
+**Project Migration (see [AGENT_TOOLS.md](AGENT_TOOLS.md)):**
+- `analyze_project` - Analyze external project structure
+- `map_project` - Map project to template format
+- `plan_migration` - Generate migration plan
+- `migrate_project` - Execute migration
 
 ### Rendering Manuscript
 
@@ -88,6 +100,7 @@ Only remove locks if no git operation is in progress.
 ### Safe to Modify
 
 - `src/stages/*.py` - Pipeline implementation
+- `src/agents/*.py` - Migration tools
 - `manuscript_quarto/*.qmd` - Manuscript content
 - `doc/*.md` - Documentation
 
@@ -95,6 +108,7 @@ Only remove locks if no git operation is in progress.
 
 - `src/pipeline.py` - Affects all pipeline commands
 - `manuscript_quarto/_quarto*.yml` - Affects rendering
+- `src/agents/structure_mapper.py` - Affects module-to-stage mapping logic
 
 ### Do Not Modify
 

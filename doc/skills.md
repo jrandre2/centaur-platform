@@ -357,3 +357,102 @@ python src/pipeline.py ingest_data
 python src/pipeline.py link_records
 python src/pipeline.py build_panel
 ```
+
+---
+
+## Project Migration Skills
+
+AI-powered tools for analyzing and migrating external research projects to the standardized template format.
+
+### /analyze-project
+
+Analyze an external project's structure and codebase.
+
+```bash
+python src/pipeline.py analyze_project --path /path/to/project
+python src/pipeline.py analyze_project --path /path/to/project --output analysis.json
+```
+
+**Options:**
+- `--path, -p`: Path to project to analyze (required)
+- `--output, -o`: Save JSON analysis to file (optional)
+
+**Output includes:**
+- Directory count and structure
+- File count by type
+- Python module analysis (imports, functions, classes, docstrings)
+- Pattern detection (pipeline stages, tests, notebooks, manuscripts)
+
+### /map-project
+
+Map an analyzed project's structure to the template format.
+
+```bash
+python src/pipeline.py map_project --path /path/to/project
+python src/pipeline.py map_project --path /path/to/project --output mapping.json
+```
+
+**Options:**
+- `--path, -p`: Path to project to map (required)
+- `--output, -o`: Save JSON mapping to file (optional)
+
+**Mapping categories:**
+- Data files → `data_raw/`
+- Output files → `figures/`
+- Documentation → `doc/`
+- Tests → `tests/`
+- Python modules → `src/stages/s00-s07.py` (based on content keywords)
+
+### /plan-migration
+
+Generate a detailed migration plan for moving a project to the template format.
+
+```bash
+python src/pipeline.py plan_migration --path /source --target /target
+python src/pipeline.py plan_migration --path /source --target /target --output plan.md
+```
+
+**Options:**
+- `--path, -p`: Path to source project (required)
+- `--target, -t`: Path for migrated project (required)
+- `--output, -o`: Save markdown plan to file (optional)
+
+**Plan includes:**
+- Setup steps (directory structure, git, venv)
+- Copy operations (data, figures, docs, tests)
+- Transform operations (merge modules into stages)
+- Generate operations (create documentation)
+- Verify operations (check imports, tests)
+- Complexity estimate (low/medium/high)
+- Warnings for items needing manual review
+
+### /migrate-project
+
+Execute a migration plan to transform a project.
+
+```bash
+# Dry run - see what would happen
+python src/pipeline.py migrate_project --path /source --target /target --dry-run
+
+# Actual execution
+python src/pipeline.py migrate_project --path /source --target /target
+```
+
+**Options:**
+- `--path, -p`: Path to source project (required)
+- `--target, -t`: Path for migrated project (required)
+- `--dry-run`: Show what would be done without making changes
+
+**Outputs:**
+- Created directory structure at target
+- Copied data, figures, docs, tests
+- Scaffold stage files (merge instructions for manual completion)
+- Generated documentation templates
+- `MIGRATION_REPORT.md` in target directory
+
+**Workflow:**
+1. Run with `--dry-run` first to preview changes
+2. Execute without `--dry-run` to perform migration
+3. Review `MIGRATION_REPORT.md` for verification status
+4. Complete scaffold files by merging source code manually
+5. Run verification steps to ensure completeness

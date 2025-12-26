@@ -46,6 +46,20 @@ journal_compare : Compare manuscript to journal requirements
 journal_parse : Parse raw guidelines into config
     Options: --input, --output, --journal
 
+# Data Audit
+audit_data : Audit pipeline data files
+    Options: --full, --report, --output
+
+# Project Migration (AI Agent Tools)
+analyze_project : Analyze external project structure
+    Options: --path, --output
+map_project : Map project structure to template
+    Options: --path, --output
+plan_migration : Generate migration plan
+    Options: --path, --target, --output
+migrate_project : Execute migration (interactive)
+    Options: --path, --target, --dry-run
+
 Usage
 -----
     python src/pipeline.py ingest_data
@@ -170,6 +184,83 @@ def parse_args() -> argparse.Namespace:
         help='Journal name (optional)'
     )
 
+    # Data Audit Commands
+    p_audit = sub.add_parser('audit_data', help='Audit pipeline data files')
+    p_audit.add_argument(
+        '--full', '-f',
+        action='store_true',
+        help='Run full audit with detailed column info'
+    )
+    p_audit.add_argument(
+        '--report', '-r',
+        action='store_true',
+        help='Save markdown report to data_work/diagnostics/'
+    )
+    p_audit.add_argument(
+        '--output', '-o',
+        default=None,
+        help='Output path for JSON report'
+    )
+
+    # Project Migration Commands (AI Agent Tools)
+    p_analyze = sub.add_parser('analyze_project', help='Analyze external project structure')
+    p_analyze.add_argument(
+        '--path', '-p',
+        required=True,
+        help='Path to project to analyze'
+    )
+    p_analyze.add_argument(
+        '--output', '-o',
+        default=None,
+        help='Output file for JSON analysis (optional)'
+    )
+
+    p_map = sub.add_parser('map_project', help='Map project structure to template')
+    p_map.add_argument(
+        '--path', '-p',
+        required=True,
+        help='Path to project to map'
+    )
+    p_map.add_argument(
+        '--output', '-o',
+        default=None,
+        help='Output file for mapping (optional)'
+    )
+
+    p_plan = sub.add_parser('plan_migration', help='Generate migration plan')
+    p_plan.add_argument(
+        '--path', '-p',
+        required=True,
+        help='Path to source project'
+    )
+    p_plan.add_argument(
+        '--target', '-t',
+        required=True,
+        help='Path for migrated project'
+    )
+    p_plan.add_argument(
+        '--output', '-o',
+        default=None,
+        help='Output file for plan (optional)'
+    )
+
+    p_migrate = sub.add_parser('migrate_project', help='Execute migration')
+    p_migrate.add_argument(
+        '--path', '-p',
+        required=True,
+        help='Path to source project'
+    )
+    p_migrate.add_argument(
+        '--target', '-t',
+        required=True,
+        help='Path for migrated project'
+    )
+    p_migrate.add_argument(
+        '--dry-run',
+        action='store_true',
+        help='Show what would be done without making changes'
+    )
+
     return p.parse_args()
 
 
@@ -253,6 +344,121 @@ def main():
             output_file=args.output,
             journal_name=args.journal
         )
+
+    # Data Audit Commands
+    elif args.cmd == 'audit_data':
+        import data_audit
+        data_audit.main(
+            full=args.full,
+            report=args.report,
+            output=args.output
+        )
+
+    # Project Migration Commands (AI Agent Tools)
+    elif args.cmd == 'analyze_project':
+        from pathlib import Path
+        from agents.project_analyzer import ProjectAnalyzer
+
+        analyzer = ProjectAnalyzer(Path(args.path))
+        analysis = analyzer.analyze()
+
+        print(analysis.summary())
+
+        if args.output:
+            Path(args.output).write_text(analysis.to_json())
+            print(f"\nJSON saved to: {args.output}")
+
+    elif args.cmd == 'map_project':
+        from pathlib import Path
+        from agents.project_analyzer import ProjectAnalyzer
+        from agents.structure_mapper import StructureMapper
+
+        analyzer = ProjectAnalyzer(Path(args.path))
+        analysis = analyzer.analyze()
+
+        mapper = StructureMapper(analysis)
+        mapping = mapper.generate_mapping()
+
+        print(mapping.summary())
+
+        if args.output:
+            Path(args.output).write_text(mapping.to_json())
+            print(f"\nJSON saved to: {args.output}")
+
+    elif args.cmd == 'plan_migration':
+        from pathlib import Path
+        from agents.project_analyzer import ProjectAnalyzer
+        from agents.structure_mapper import StructureMapper
+        from agents.migration_planner import MigrationPlanner
+
+        analyzer = ProjectAnalyzer(Path(args.path))
+        analysis = analyzer.analyze()
+
+        mapper = StructureMapper(analysis)
+        mapping = mapper.generate_mapping()
+
+        planner = MigrationPlanner(analysis, mapping)
+        plan = planner.generate_plan(args.target)
+
+        print(plan.to_markdown())
+
+        if args.output:
+            Path(args.output).write_text(plan.to_markdown())
+            print(f"\nPlan saved to: {args.output}")
+
+    elif args.cmd == 'migrate_project':
+        from pathlib import Path
+        from agents.project_analyzer import ProjectAnalyzer
+        from agents.structure_mapper import StructureMapper
+        from agents.migration_planner import MigrationPlanner
+        from agents.migration_executor import MigrationExecutor
+
+        source_path = Path(args.path)
+        target_path = Path(args.target)
+
+        # Get the template path (this project's root)
+        template_path = Path(__file__).parent.parent
+
+        print(f"Analyzing source project: {source_path}")
+        analyzer = ProjectAnalyzer(source_path)
+        analysis = analyzer.analyze()
+
+        print(f"Mapping to template structure...")
+        mapper = StructureMapper(analysis)
+        mapping = mapper.generate_mapping()
+
+        print(f"Generating migration plan...")
+        planner = MigrationPlanner(analysis, mapping)
+        plan = planner.generate_plan(str(target_path))
+
+        print(f"\n{'DRY RUN - ' if args.dry_run else ''}Executing migration...")
+        print(f"  Source: {source_path}")
+        print(f"  Target: {target_path}")
+        print(f"  Steps: {len(plan.steps)}")
+        print()
+
+        executor = MigrationExecutor(
+            plan=plan,
+            source_path=source_path,
+            template_path=template_path,
+            dry_run=args.dry_run,
+            verbose=True
+        )
+
+        report = executor.execute()
+
+        print()
+        print("=" * 60)
+        print("MIGRATION COMPLETE" if report.overall_success else "MIGRATION FAILED")
+        print("=" * 60)
+        print(f"  Successful: {report.success_count}/{len(report.results)}")
+        print(f"  Failed: {report.failure_count}/{len(report.results)}")
+
+        # Save execution report
+        report_path = target_path / 'MIGRATION_REPORT.md'
+        if not args.dry_run and target_path.exists():
+            report_path.write_text(report.to_markdown())
+            print(f"\nReport saved to: {report_path}")
 
 
 if __name__ == '__main__':
