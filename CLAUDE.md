@@ -127,18 +127,72 @@ Use scripts for one-off analyses that shouldn't be part of the reproducible pipe
 
 ## Manuscript Writing Standards
 
-**DO NOT include in manuscript prose:**
+Manuscripts must read as standalone journal articles. A reader who has never seen the repository, revision history, or internal documentation should be able to read the manuscript without encountering any reference to those things.
 
-- References to Python scripts or file paths (e.g., `script.py`, `src/...`)
-- Internal documentation references
-- Metacommentary about the writing process
+### Prohibited in Manuscript Prose
+
+**Internal artifacts and revision history:**
+
+- References to Python scripts, file paths, or pipeline commands (e.g., `script.py`, `src/...`, `data_work/`)
+- Internal documentation references (CLAUDE.md, README, REVISION_TRACKER)
+- Revision history or audit commentary ("this redraft", "the archived", "the legacy", "the Word draft", "salvage and transparency exercise")
+- References to internal project artifacts (Quarto archive, repository, Word draft versions, prior internal manuscripts)
 - TODO/FIXME placeholders
 
-**All manuscript text should be:**
+**Self-referential framing and metacommentary:**
 
-- Self-contained academic prose
-- Supported by formal citations where needed
-- Free of implementation details visible only to developers
+- "This study examines..." or "This paper presents..." — present findings directly instead
+- "This approach advances the literature..." — simply present the analysis
+- "First application of..." / "most robust estimates to date" — let reviewers judge novelty
+- Comparisons to internal prior work framed as "prior approaches" or "traditional methods"
+- "Unlike [our earlier method]..." — present the current methodology on its own merits
+
+**Numbered lists and bullet points in body prose:**
+
+- Use flowing paragraph prose in the main body and appendices
+- Tables are appropriate for structured data (fit indices, coefficients, sample sizes)
+- Reserve numbered lists only for explicit research questions or ordered procedural steps in methods
+
+### Required Standards
+
+**Voice and framing:**
+
+- Use active voice with "we" consistently (not "this study", "the paper", "the article", "the manuscript")
+- Exception: "the manuscript" is acceptable when defining terminology scope ("Throughout the manuscript, *grantee* refers to...")
+- Present findings directly without self-referential framing
+- Let the methodology speak for itself
+
+**Citations and references:**
+
+- Every in-text citation must have a matching entry in the References section
+- Every reference entry must be cited at least once in the text (no orphan references)
+- When removing content that contained citations, also remove the corresponding references unless cited elsewhere
+- When adding arguments that draw on external work, add the supporting citation — do not leave claims unsupported
+
+**Appendices:**
+
+- Appendices follow all the same rules as the main body — no relaxed standards for meta-commentary, numbered lists, or internal-artifact references
+- Appendix section titles should be descriptive (e.g., "Specification Comparison") not meta ("Archived Specification Comparison")
+- Tables in appendices should have proper cross-reference labels
+
+**Journal formatting:**
+
+- No table of contents in journal-format outputs
+- Abstract belongs in YAML front matter (not as a body section) for templates that support it (e.g., Elsevier)
+- Keywords in YAML front matter
+- Author affiliations should include department, institution, city, state/country
+
+### Examples
+
+| Avoid | Use Instead |
+|-------|-------------|
+| "This study examines..." | "Administrative throughput affects..." (direct statement) |
+| "This approach advances the literature..." | [Simply present the analysis] |
+| "The archived SEM specifications..." | "The SEM specifications..." |
+| "The current redraft narrows..." | "We narrow the analysis to..." |
+| "Prior latent variable approaches may overcomplicate..." | [Remove or cite external literature] |
+| Numbered list of data processing steps | Flowing prose describing the data processing pipeline |
+| "Appendix Table A3 reports the imported-versus-rerun fit comparison" | "Appendix Table A3 reports the fit-verification comparison" |
 
 ## Peer Review Management
 
